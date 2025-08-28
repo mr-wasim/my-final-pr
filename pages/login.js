@@ -1,9 +1,8 @@
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useToast } from "./_app";
 
-export default function LoginPage(){
+export default function LoginPage() {
   const router = useRouter();
   const role = (router.query.role || "admin");
   const { push } = useToast();
@@ -11,17 +10,22 @@ export default function LoginPage(){
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  async function handleLogin(e){
+  async function handleLogin(e) {
     e.preventDefault();
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, role })
+      body: JSON.stringify({ username, password, role }),
     });
     const data = await res.json();
-    if(res.ok){
+
+    if (res.ok) {
       push("Login successful");
-      if(data.user.role === "admin") router.push("/admin/dashboard");
+
+      // 🟢 Save user in localStorage (so refresh me bhi session mile)
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      if (data.user.role === "admin") router.push("/admin/dashboard");
       else router.push("/tech/dashboard");
     } else {
       push(data.error || "Login failed");
@@ -38,16 +42,33 @@ export default function LoginPage(){
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-sm font-medium">Username</label>
-            <input value={username} onChange={e=>setUsername(e.target.value)} required className="mt-1 w-full border rounded-xl px-3 py-2" placeholder="admin or tech username" />
+            <input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="mt-1 w-full border rounded-xl px-3 py-2"
+              placeholder="admin or tech username"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium">Password</label>
-            <input type="password" value={password} onChange={e=>setPassword(e.target.value)} required className="mt-1 w-full border rounded-xl px-3 py-2" placeholder="••••••••" />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="mt-1 w-full border rounded-xl px-3 py-2"
+              placeholder="••••••••"
+            />
           </div>
-          <button className="w-full py-2 rounded-xl bg-slate-900 text-white">Login</button>
-          <p className="text-xs text-slate-500">Admin username: admin (password set in database). No autofill.</p>
+          <button className="w-full py-2 rounded-xl bg-slate-900 text-white">
+            Login
+          </button>
+          <p className="text-xs text-slate-500">
+            Admin username: admin (password set in database). No autofill.
+          </p>
         </form>
       </div>
     </div>
-  )
+  );
 }

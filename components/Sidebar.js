@@ -14,7 +14,7 @@ const items = [
 export default function Sidebar(){
   const router = useRouter();
   return (
-    <aside className="w-64 shrink-0 h-screen sticky top-0 bg-white border-r p-4 hidden md:block">
+    <aside className="w-64 shrink-0 h-screen sticky top-0 bg-white border-r p-4  md:block">
       <div className="font-extrabold text-xl mb-6">Chimney CRM</div>
       <nav className="space-y-1">
         {items.map(it => (

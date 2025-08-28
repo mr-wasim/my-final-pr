@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/router";
 import { useToast } from "./_app";
 
@@ -20,16 +20,16 @@ export default function LoginPage() {
     const data = await res.json();
 
     if (res.ok) {
-      push("Login successful");
-
-      // 🟢 save in localStorage
+      // save in localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // 🟢 strong redirect
+      // ✅ Admin → sidha dashboard, no toast
       if (data.user.role === "admin") {
         router.replace("/admin/dashboard");
       } else {
+        // ✅ Technician → toast + redirect
+        push("Login successful");
         router.replace("/tech/dashboard");
       }
     } else {

@@ -14,6 +14,7 @@ export default function Home() {
     if (storedUser && storedToken) {
       try {
         const user = JSON.parse(storedUser);
+
         if (user.role === "admin") {
           router.replace("/admin/dashboard");
         } else if (user.role === "technician") {

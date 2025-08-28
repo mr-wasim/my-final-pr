@@ -10,13 +10,11 @@ export default function SignaturePad({ value, onChange }) {
         y: e.touches[0].clientY - rect.top,
       };
     } else if (e.changedTouches && e.changedTouches.length > 0) {
-      // touchend ke liye changedTouches use hota hai
       return {
         x: e.changedTouches[0].clientX - rect.left,
         y: e.changedTouches[0].clientY - rect.top,
       };
     } else {
-      // mouse events
       return {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
@@ -36,15 +34,29 @@ export default function SignaturePad({ value, onChange }) {
       canvas.isDrawing = true;
       ctx.beginPath();
       ctx.moveTo(x, y);
+
+      // Disable scroll on touch start
+      if (e.type === "touchstart") {
+        document.body.style.overflow = "hidden";
+      }
     } else if (
       (e.type === "mousemove" || e.type === "touchmove") &&
       canvas.isDrawing
     ) {
       ctx.lineTo(x, y);
       ctx.stroke();
-    } else if (e.type === "mouseup" || e.type === "mouseleave" || e.type === "touchend") {
+    } else if (
+      e.type === "mouseup" ||
+      e.type === "mouseleave" ||
+      e.type === "touchend"
+    ) {
       canvas.isDrawing = false;
       onChange && onChange(canvas.toDataURL());
+
+      // Enable scroll again on touch end
+      if (e.type === "touchend") {
+        document.body.style.overflow = "auto";
+      }
     }
 
     e.preventDefault();
@@ -64,7 +76,7 @@ export default function SignaturePad({ value, onChange }) {
         ref={ref}
         width={600}
         height={180}
-        className="border rounded-xl w-full bg-white"
+        className="border rounded-xl w-full bg-white touch-none"
         onMouseDown={draw}
         onMouseMove={draw}
         onMouseUp={draw}

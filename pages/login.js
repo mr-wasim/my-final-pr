@@ -1,11 +1,10 @@
-// pages/login.js
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useToast } from "./_app";
 
 export default function LoginPage() {
   const router = useRouter();
-  const role = (router.query.role || "admin");
+  const role = router.query.role || "admin";
   const { push } = useToast();
 
   const [username, setUsername] = useState("");
@@ -13,28 +12,28 @@ export default function LoginPage() {
 
   async function handleLogin(e) {
     e.preventDefault();
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, role }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        push("Login successful");
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password, role }),
+    });
+    const data = await res.json();
 
-        // Save token + user to localStorage so session persists in webview / apk
-        if (data.token) localStorage.setItem("token", data.token);
-        if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
+    if (res.ok) {
+      push("Login successful");
 
-        if (data.user.role === "admin") router.push("/admin/dashboard");
-        else router.push("/tech/dashboard");
+      // 🟢 save in localStorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // 🟢 strong redirect
+      if (data.user.role === "admin") {
+        router.replace("/admin/dashboard");
       } else {
-        push(data.error || "Login failed");
+        router.replace("/tech/dashboard");
       }
-    } catch (err) {
-      console.error(err);
-      push("Login failed");
+    } else {
+      push(data.error || "Login failed");
     }
   }
 
@@ -67,7 +66,9 @@ export default function LoginPage() {
               placeholder="••••••••"
             />
           </div>
-          <button className="w-full py-2 rounded-xl bg-slate-900 text-white">Login</button>
+          <button className="w-full py-2 rounded-xl bg-slate-900 text-white">
+            Login
+          </button>
           <p className="text-xs text-slate-500">
             Admin username: admin (password set in database). No autofill.
           </p>

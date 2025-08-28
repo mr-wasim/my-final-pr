@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import { setAuthCookie, ensureAdminSeed, findUserByCredentials } from "../../../../lib/auth";
+import { setAuthCookie, ensureAdminSeed, findUserByCredentials } from "../../../lib/auth"; 
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
 

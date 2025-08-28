@@ -1,3 +1,4 @@
+// pages/_app.js
 import "../styles/globals.css";
 import { useEffect, useState, createContext, useContext } from "react";
 import { useRouter } from "next/router";
@@ -7,7 +8,7 @@ const UserContext = createContext({ user: null, setUser: () => {} });
 
 export default function MyApp({ Component, pageProps }) {
   const [toasts, setToasts] = useState([]);
-  const [user, setUser] = useState(null); // 🟢 global user state
+  const [user, setUser] = useState(null);
   const router = useRouter();
 
   function pushToast(msg) {
@@ -16,15 +17,13 @@ export default function MyApp({ Component, pageProps }) {
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3000);
   }
 
-  // 🟢 On app load, check if user is in localStorage
+  // Restore user from localStorage (so refresh or webview restart keeps session)
   useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored));
-      } catch (e) {
-        localStorage.removeItem("user");
-      }
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) setUser(JSON.parse(storedUser));
+    } catch (e) {
+      localStorage.removeItem("user");
     }
   }, []);
 

@@ -1,3 +1,4 @@
+// pages/login.js
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useToast } from "./_app";
@@ -12,23 +13,28 @@ export default function LoginPage() {
 
   async function handleLogin(e) {
     e.preventDefault();
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, role }),
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, role }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        push("Login successful");
 
-    if (res.ok) {
-      push("Login successful");
+        // Save token + user to localStorage so session persists in webview / apk
+        if (data.token) localStorage.setItem("token", data.token);
+        if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
 
-      // 🟢 Save user in localStorage (so refresh me bhi session mile)
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      if (data.user.role === "admin") router.push("/admin/dashboard");
-      else router.push("/tech/dashboard");
-    } else {
-      push(data.error || "Login failed");
+        if (data.user.role === "admin") router.push("/admin/dashboard");
+        else router.push("/tech/dashboard");
+      } else {
+        push(data.error || "Login failed");
+      }
+    } catch (err) {
+      console.error(err);
+      push("Login failed");
     }
   }
 
@@ -61,9 +67,7 @@ export default function LoginPage() {
               placeholder="••••••••"
             />
           </div>
-          <button className="w-full py-2 rounded-xl bg-slate-900 text-white">
-            Login
-          </button>
+          <button className="w-full py-2 rounded-xl bg-slate-900 text-white">Login</button>
           <p className="text-xs text-slate-500">
             Admin username: admin (password set in database). No autofill.
           </p>

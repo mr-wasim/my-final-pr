@@ -1,34 +1,34 @@
-import bcrypt from "bcryptjs";
-import { setAuthCookie, ensureAdminSeed, findUserByCredentials } from "../../../lib/auth";
+// pages/api/auth/login.js
+import jwt from "jsonwebtoken";
+import { ensureAdminSeed, findUserByCredentials } from "../../../lib/auth";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
   const { username, password, role } = req.body || {};
 
   try {
-    // Ensure admin exists (seed)
     await ensureAdminSeed();
 
-    // Admin login
-    if (role === "admin") {
-      const user = await findUserByCredentials(username, password, "admin");
-      if (!user) return res.status(401).json({ error: "Invalid credentials" });
+    const user = await findUserByCredentials(username, password, role);
+    if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
-      // Set JWT cookie with long expiry (7 days for example)
-      setAuthCookie(res, user, { maxAge: 60 * 60 * 24 * 7 }); // 7 days
-      return res.json({ user });
-    }
+    const token = jwt.sign(
+      { id: user._id?.toString ? user._id.toString() : user._id, role: user.role, username: user.username },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" } // change as needed
+    );
 
-    // Technician login
-    if (role === "technician") {
-      const user = await findUserByCredentials(username, password, "technician");
-      if (!user) return res.status(401).json({ error: "Invalid credentials" });
-
-      setAuthCookie(res, user, { maxAge: 60 * 60 * 24 * 7 }); // 7 days
-      return res.json({ user });
-    }
-
-    return res.status(400).json({ error: "Invalid role" });
+    // Do NOT set cookies here for webview reliability — return token
+    return res.status(200).json({
+      user: {
+        _id: user._id,
+        username: user.username,
+        role: user.role,
+        name: user.name || null,
+        // any other safe fields
+      },
+      token,
+    });
   } catch (e) {
     console.error(e);
     return res.status(500).json({ error: "Server error" });

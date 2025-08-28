@@ -12,7 +12,7 @@ export default function LoginPage() {
 
   async function handleLogin(e) {
     e.preventDefault();
-    const res = await fetch("/api/login", {   // 🟢 Fixed path
+    const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password, role }),
@@ -24,9 +24,11 @@ export default function LoginPage() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
+      // ✅ Admin → sidha dashboard, no toast
       if (data.user.role === "admin") {
         router.replace("/admin/dashboard");
       } else {
+        // ✅ Technician → toast + redirect
         push("Login successful");
         router.replace("/tech/dashboard");
       }

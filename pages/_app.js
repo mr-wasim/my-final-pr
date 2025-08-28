@@ -21,11 +21,20 @@ export default function MyApp({ Component, pageProps }) {
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem("user");
-      if (storedUser) setUser(JSON.parse(storedUser));
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        setUser(parsed);
+
+        // 🚀 Redirect logic: agar already login hai to choose-page skip karo
+        if (router.pathname === "/choose") {
+          if (parsed.role === "admin") router.replace("/admin");
+          if (parsed.role === "technician") router.replace("/technician");
+        }
+      }
     } catch (e) {
       localStorage.removeItem("user");
     }
-  }, []);
+  }, [router]);
 
   // small route change loader
   const [loading, setLoading] = useState(false);
